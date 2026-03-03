@@ -41,7 +41,7 @@ public class UserDTO {
 
     private List<Role> roles;
 
-    @JsonManagedReference
+    @JsonManagedReference  // If helps avoid recursion loop by ignoring the userDTO withing the AccountDTO
     private List<AccountDTO> accounts;
 
     private LocalDateTime createdAt;
