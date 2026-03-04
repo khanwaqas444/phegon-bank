@@ -1,5 +1,6 @@
 package com.phegon.phegonbank.auth_users.entity;
 
+import com.phegon.phegonbank.account.entity.Account;
 import com.phegon.phegonbank.role.entity.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
