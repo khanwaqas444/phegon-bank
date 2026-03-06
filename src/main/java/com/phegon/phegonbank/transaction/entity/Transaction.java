@@ -39,5 +39,11 @@ public class Transaction {
     private TransactionStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id", nullable = false)
     private Account account;
+
+    //for transfer
+    private String sourceAccount;
+    private String destinationAccount;
+
 }
