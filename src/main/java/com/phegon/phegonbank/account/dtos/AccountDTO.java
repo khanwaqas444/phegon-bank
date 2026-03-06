@@ -9,6 +9,7 @@ import com.phegon.phegonbank.auth_users.entity.User;
 import com.phegon.phegonbank.enums.AccountStatus;
 import com.phegon.phegonbank.enums.AccountType;
 import com.phegon.phegonbank.enums.Currency;
+import com.phegon.phegonbank.transaction.dtos.TransactionDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
