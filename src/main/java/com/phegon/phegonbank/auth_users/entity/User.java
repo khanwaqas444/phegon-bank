@@ -22,7 +22,6 @@ import java.util.List;
 @NoArgsConstructor
 public class User {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -54,4 +53,5 @@ public class User {
 
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt;
+
 }

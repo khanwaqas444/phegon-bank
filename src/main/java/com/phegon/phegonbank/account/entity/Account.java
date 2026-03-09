@@ -38,8 +38,8 @@ public class Account {
     @Column(nullable = false)
     private AccountType accountType;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_Id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Enumerated(EnumType.STRING)
@@ -53,6 +53,6 @@ public class Account {
 
     private LocalDateTime closedAt;
 
-    private LocalDateTime cratedAt = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt;
 }

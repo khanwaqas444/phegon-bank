@@ -31,4 +31,5 @@ public class PasswordResetCode {
     private LocalDateTime expiryDate;
 
     private boolean used;
+
 }
