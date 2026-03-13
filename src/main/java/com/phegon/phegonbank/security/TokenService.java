@@ -21,10 +21,6 @@ public class TokenService {
     private SecretKey key;
 
 
-    @PostConstruct
-    private void init(){
-        byte[] keyByte = JWT_SECRET.getBytes(StandardCharsets.UTF_8);
-        this.key = new SecretKeySpec(keyByte, "HmacSHA256");
-    }
+
 
 }
