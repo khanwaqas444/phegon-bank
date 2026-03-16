@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -19,7 +20,7 @@ public class TokenService {
     private String JWT_SECRET;
 
     @Value("${jwt.expiration.time}")
-    private String EXPIRATION_TIME;
+    private long EXPIRATION_TIME;
 
 
     private SecretKey key;
@@ -50,6 +51,15 @@ public class TokenService {
                         build().
                         parseSignedClaims(token)
                         .getPayload());
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails){
+        final String username = getUsernameFromToken(token);
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+    private boolean isTokenExpired(String token){
+        return extractClaims(token, Claims::getExpiration).before(new Date());
     }
 
 }
