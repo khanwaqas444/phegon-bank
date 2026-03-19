@@ -36,6 +36,6 @@ public class SecurityFilter {
                 .sessionManagement(mag -> mag.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return httpSecurity.build();
+
     }
 }
