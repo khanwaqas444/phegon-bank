@@ -1,7 +1,9 @@
 package com.phegon.phegonbank.notification.services;
 
 import com.phegon.phegonbank.auth_users.entity.User;
+import com.phegon.phegonbank.enums.NotificationType;
 import com.phegon.phegonbank.notification.dtos.NotificationDTO;
+import com.phegon.phegonbank.notification.entity.Notification;
 import com.phegon.phegonbank.notification.repo.NotificationRepo;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -39,12 +41,30 @@ public class NotificationServiceImpl implements NotificationService {
             helper.setTo(notificationDTO.getRecipient());
             helper.setSubject(notificationDTO.getSubject());
 
+            // Use template if provided
             if (notificationDTO.getTemplateName() != null){
                 Context context = new Context();
                 context.setVariables(notificationDTO.getTemplateVariables());
                 String htmlContent = templateEngine.process(notificationDTO.getTemplateName(), context);
                 helper.setText(htmlContent, true);
+            } else {
+
+                // If not template send text body directly
+                helper.setText(notificationDTO.getBody(), true);
             }
+
+            mailSender.send(mimeMessage);
+
+            //save to our database table
+//            Notification notificationToSave = Notification.builder()
+//                    .recipient(notificationDTO.getRecipient())
+//                    .subject(notificationDTO.getSubject())
+//                    .body(notificationDTO.getBody())
+//                    .type(NotificationType.EMAIL)
+//                    .user(user)
+//                    .build();
+//
+//            notificationRepo.save(notificationToSave);
 
         }catch (MessagingException e){
             log.error(e.getMessage());
