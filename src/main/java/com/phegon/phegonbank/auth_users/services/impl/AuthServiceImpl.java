@@ -1,7 +1,7 @@
 package com.phegon.phegonbank.auth_users.services.impl;
 
 import com.phegon.phegonbank.account.entity.Account;
-import com.phegon.phegonbank.account.services.AccountService;
+//import com.phegon.phegonbank.account.services.AccountService;
 import com.phegon.phegonbank.auth_users.dtos.LoginRequest;
 import com.phegon.phegonbank.auth_users.dtos.LoginResponse;
 import com.phegon.phegonbank.auth_users.dtos.RegistrationRequest;
@@ -49,6 +49,13 @@ public class AuthServiceImpl implements AuthService {
     private final TokenService tokenService;
     private final NotificationService notificationService;
 
+    private final CodeGenerator codeGenerator;
+    private final PasswordResetCodeRepo passwordResetCodeRepo;
+
+
+    @Value("${password.reset.link}")
+    private String resetLink;
+
 
     @Override
     public Response<String> register(RegistrationRequest request) {
@@ -84,7 +91,7 @@ public class AuthServiceImpl implements AuthService {
         User savedUser = userRepo.save(user);
 
         //TODO AUTO GENERATE AN ACCOUNT NUMBER FOR THE USER
-        Account savedAccount = accountService.createAccount(AccountType.SAVINGS, savedUser);
+//        Account savedAccount = accountService.createAccount(AccountType.SAVINGS, savedUser);
 
         //SEND WELCOME EMAIL
         Map<String, Object> vars = new HashMap<>();
@@ -103,7 +110,7 @@ public class AuthServiceImpl implements AuthService {
         //SEND ACCOUNT CREATION/DETAILS EMAIL
         Map<String, Object> accountVars = new HashMap<>();
         accountVars.put("name", savedUser.getFirstName());
-        accountVars.put("accountNumber", savedAccount.getAccountNumber());
+//        accountVars.put("accountNumber", savedAccount.getAccountNumber());
         accountVars.put("accountType", AccountType.SAVINGS.name());
         accountVars.put("currency", Currency.USD);
 
@@ -115,20 +122,129 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         notificationService.sendEmail(accountCreatedEmail, savedUser);
+
+        return Response.<String>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Your account has been created successfully")
+//                .data("Email of your account details has been sent to you. Your account number is: " + savedAccount.getAccountNumber())
+                .build();
+
     }
 
     @Override
     public Response<LoginResponse> login(LoginRequest loginRequest) {
-        return null;
+
+        String email = loginRequest.getEmail();
+        String password = loginRequest.getPassword();
+
+        User user = userRepo.findByEmail(email).orElseThrow(() -> new NotFoundException("Email Not Found"));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new BadRequestException("Password doesn't match");
+        }
+
+        String token = tokenService.generateToken(user.getEmail());
+
+        LoginResponse loginResponse = LoginResponse.builder()
+                .roles(user.getRoles().stream().map(Role::getName).toList())
+                .token(token)
+                .build();
+
+        return Response.<LoginResponse>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Login Successful")
+                .data(loginResponse)
+                .build();
     }
 
     @Override
+    @Transactional
     public Response<?> forgetPassword(String email) {
-        return null;
+
+        User user = userRepo.findByEmail(email).orElseThrow(() -> new NotFoundException("User Not Found"));
+        passwordResetCodeRepo.deleteByUserId(user.getId());
+
+        String code = codeGenerator.generateUniqueCode();
+
+        PasswordResetCode resetCode = PasswordResetCode.builder()
+                .user(user)
+                .code(code)
+                .expiryDate(calculateExpiryDate())
+                .used(false)
+                .build();
+
+        passwordResetCodeRepo.save(resetCode);
+
+        //send email reset link out
+        Map<String, Object> templateVariables = new HashMap<>();
+        templateVariables.put("name", user.getFirstName());
+        templateVariables.put("resetLink", resetLink + code);
+
+
+        NotificationDTO notificationDTO = NotificationDTO.builder()
+                .recipient(user.getEmail())
+                .subject("Password Reset Code")
+                .templateName("password-reset")
+                .templateVariables(templateVariables)
+                .build();
+
+        notificationService.sendEmail(notificationDTO, user);
+
+
+        return Response.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Password reset code sent to your email")
+                .build();
     }
 
     @Override
+    @Transactional
     public Response<?> updatePasswordViaResetCode(ResetPasswordRequest resetPasswordRequest) {
-        return null;
+
+        String code = resetPasswordRequest.getCode();
+        String newPassword = resetPasswordRequest.getNewPassword();
+
+        // Find and validate code
+
+        PasswordResetCode resetCode = passwordResetCodeRepo.findByCode(code)
+                .orElseThrow(() -> new BadRequestException("Invalid reset code"));
+
+        // Check expiration first
+        if (resetCode.getExpiryDate().isBefore(LocalDateTime.now())) {
+            passwordResetCodeRepo.delete(resetCode); // Clean up expired code
+            throw new BadRequestException("Reset code has expired");
+        }
+
+
+        //update the password
+        User user = resetCode.getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepo.save(user);
+
+        // Delete the code immediately after successful use
+        passwordResetCodeRepo.delete(resetCode);
+
+
+        // Send confirmation email
+        Map<String, Object> templateVariables = new HashMap<>();
+        templateVariables.put("name", user.getFirstName());
+
+        NotificationDTO confirmationEmail = NotificationDTO.builder()
+                .recipient(user.getEmail())
+                .subject("Password Updated Successfully")
+                .templateName("password-update-confirmation")
+                .templateVariables(templateVariables)
+                .build();
+
+        notificationService.sendEmail(confirmationEmail, user);
+
+        return Response.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Password updated successfully")
+                .build();
+    }
+
+    private LocalDateTime calculateExpiryDate() {
+        return LocalDateTime.now().plusHours(5);
     }
 }
