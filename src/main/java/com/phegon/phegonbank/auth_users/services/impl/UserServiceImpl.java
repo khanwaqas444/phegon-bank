@@ -59,7 +59,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Response<UserDTO> getMyProfile() {
-        return null;
+
+        User user = getCurrentLoggedInUser();
+        UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+
+        return Response.<UserDTO>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("User retrieved")
+                .data(userDTO)
+                .build();
     }
 
     @Override
