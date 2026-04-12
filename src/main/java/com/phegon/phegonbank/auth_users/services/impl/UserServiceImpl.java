@@ -44,6 +44,9 @@ public class UserServiceImpl implements UserService {
     private final ModelMapper modelMapper;
 
 
+    private final String uploadDir = "uploads/profile-pictures/";
+
+
     @Override
     public User getCurrentLoggedInUser() {
 
@@ -72,12 +75,56 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Response<Page<UserDTO>> getAllUsers(int page, int size) {
-        return null;
+
+        Page<User> users = userRepo.findAll(PageRequest.of(page, size));
+
+        Page<UserDTO> userDTOS = users.map(user -> modelMapper.map(user, UserDTO.class));
+
+        return Response.<Page<UserDTO>>builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Users retrieved")
+                .data(userDTOS)
+                .build();
+
     }
 
     @Override
     public Response<?> updatePassword(UpdatePasswordRequest updatePasswordRequest) {
-        return null;
+        User user = getCurrentLoggedInUser();
+
+        String newPassword = updatePasswordRequest.getNewPassword();
+        String oldPassword = updatePasswordRequest.getOldPassword();
+
+        if (oldPassword == null || newPassword == null) {
+            throw new BadRequestException("Old and New Password Required");
+        }
+
+        // Validate the old password.
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new BadRequestException("Old Password not Correct");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setUpdatedAt(LocalDateTime.now());
+
+        userRepo.save(user);
+
+        // Send password change confirmation email.
+        Map<String, Object> templateVariables = new HashMap<>();
+        templateVariables.put("name", user.getFirstName());
+
+        NotificationDTO notificationDTO = NotificationDTO.builder()
+                .recipient(user.getEmail())
+                .subject("Your Password Was Successfully Changed")
+                .templateName("password-change")
+                .templateVariables(templateVariables)
+                .build();
+
+        notificationService.sendEmail(notificationDTO, user);
+
+        return Response.builder()
+                .statusCode(HttpStatus.OK.value())
+                .message("Password Changed Successfully")
+                .build();
     }
 
     @Override
