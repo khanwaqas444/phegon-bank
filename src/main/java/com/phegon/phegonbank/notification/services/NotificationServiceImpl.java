@@ -40,6 +40,7 @@ public class NotificationServiceImpl implements NotificationService {
             );
             helper.setTo(notificationDTO.getRecipient());
             helper.setSubject(notificationDTO.getSubject());
+            helper.setFrom("no-reply@phegonbank.com", "Phegon Bank");
 
             // Use template if provided
             if (notificationDTO.getTemplateName() != null){
@@ -66,7 +67,7 @@ public class NotificationServiceImpl implements NotificationService {
 
             notificationRepo.save(notificationToSave);
 
-        }catch (MessagingException e){
+        }catch (MessagingException | java.io.UnsupportedEncodingException e){
             log.error(e.getMessage());
         }
 
