@@ -1,14 +1,14 @@
-#Stage 1: to build the application
+#Stage 1: to build the applciation
 FROM eclipse-temurin:21-jdk-jammy AS builder
 
 # Set the working directory inside the container
 WORKDIR /app
 
 # Install the Apache Maven build tool
-# Update packages lists and install Maven without recommended packages to keep the layer small
+# Update package lists and install Maven without recommended packages to keep the layer small
 RUN apt-get update && apt-get install -y --no-install-recommends maven && rm -rf /var/lib/apt/lists/*
 
-# Copy the Project Object (POM) file from the host to the container's WORKDIR (/app).
+# Copy the Project Object Model (POM) file from the host to the container's WORKDIR (/app).
 COPY pom.xml .
 
 # Download project dependencies
@@ -21,8 +21,8 @@ COPY src ./src
 RUN mvn clean package -Dmaven.test.skip=true
 
 
-#Stage 2: to build a production ready image and run
-#set up the run time environment
+#Stage 2 is to build a production ready image and run
+#set up the runtime environemnt
 FROM eclipse-temurin:21-jre-jammy
 
 # Set the working directory inside the container
@@ -38,4 +38,17 @@ EXPOSE 8090
 
 
 # Define the command to run the application when the container starts
-ENTRYPOINT ["java","-jar0","app.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]
+
+
+
+
+
+
+
+
+
+
+
+
+
