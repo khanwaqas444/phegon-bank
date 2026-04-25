@@ -5,7 +5,6 @@ import com.phegon.phegonbank.auth_users.dtos.UserDTO;
 import com.phegon.phegonbank.auth_users.entity.User;
 import com.phegon.phegonbank.auth_users.repo.UserRepo;
 import com.phegon.phegonbank.auth_users.services.UserService;
-//import com.phegon.phegonbank.aws.S3Service;
 import com.phegon.phegonbank.aws.S3Service;
 import com.phegon.phegonbank.exceptions.BadRequestException;
 import com.phegon.phegonbank.exceptions.NotFoundException;
@@ -24,7 +23,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

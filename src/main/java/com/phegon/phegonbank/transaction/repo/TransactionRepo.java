@@ -1,6 +1,5 @@
 package com.phegon.phegonbank.transaction.repo;
 
-import com.phegon.phegonbank.account.entity.Account;
 import com.phegon.phegonbank.transaction.entity.Transaction;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
