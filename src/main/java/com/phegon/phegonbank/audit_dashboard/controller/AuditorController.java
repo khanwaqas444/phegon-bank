@@ -20,20 +20,19 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/audit")
 @RequiredArgsConstructor
-@PreAuthorize("hasAuthority('ADMIN') or hasAuthority('AUDITOR')")
 public class AuditorController {
 
     private final AuditorService auditorService;
 
 
-//    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('AUDITOR')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('AUDITOR')")
     @GetMapping("/totals")
     public ResponseEntity<Map<String, Long>> getSystemTotals() {
         return ResponseEntity.ok(auditorService.getSystemTotals());
     }
 
 
-//    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('AUDITOR')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('AUDITOR')")
     @GetMapping("/users")
     public ResponseEntity<UserDTO> findUserByEmail(@RequestParam String email) {
 
@@ -54,7 +53,7 @@ public class AuditorController {
     }
 
 
-//    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('AUDITOR')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('AUDITOR')")
     @GetMapping("/transactions/by-account")
     public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountNumber(@RequestParam String accountNumber) {
 
@@ -67,7 +66,7 @@ public class AuditorController {
     }
 
 
-//    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('AUDITOR')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('AUDITOR')")
     @GetMapping("/transactions/by-id")
     public ResponseEntity<TransactionDTO> getTransactionById(@RequestParam Long id) {
 
